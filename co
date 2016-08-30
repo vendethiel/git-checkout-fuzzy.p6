@@ -1,7 +1,7 @@
 #!/usr/bin/env perl6
 
 my @branches = (run <git for-each-ref --format='%(refname:short)' refs/heads>, :out).out.slurp-rest.lines;
-@branches.=map(*.trans(<' "> X=> ''));
+@branches.=map: { S:g/"'"// };
 
 my @ignores;
 { @ignores = lines slurp("$*HOME/.co-ignore"); }
