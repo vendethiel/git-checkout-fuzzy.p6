@@ -1,0 +1,46 @@
+#!/usr/bin/env perl6
+
+my @branches = (run <git for-each-ref --format='%(refname:short)' refs/heads>, :out).out.slurp-rest.lines;
+@branches.=map(*.trans(<' "> X=> ''));
+
+my @ignores;
+{ @ignores = lines slurp("$*HOME/.co-ignore"); }
+
+multi sub MAIN(*@hints, Bool :$s = False) {
+  # check for perfect match
+  if @hints == 1 && any(@branches) eq @hints {
+    @branches = @hints;
+  } else {
+    for @hints {
+      @branches.=grep(/$_/);
+    }
+    for @ignores -> $ignore {
+      @branches.=grep({ $_ !~~ /$ignore/ });
+    }
+  }
+  given @branches {
+    when * > 1 {
+      say "{+@branches} branches found:";
+      display(@hints);
+    }
+    when 1 {
+      if $s {
+        say "Found: @branches[0]";
+      } else {
+        run <<git checkout @branches[0]>>;
+      }
+    }
+    when 0 {
+      say "No branch matching these hints!";
+    }
+  }
+}
+
+multi sub MAIN() {
+  say "Available branches:";
+  display;
+}
+
+sub display(@hints = ()) {
+  say @branches.map({ s:g[(@hints)] = "\e[0;31m$0\e[0m"; " - $_" }).join: "\n";
+}
