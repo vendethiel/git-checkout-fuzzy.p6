@@ -43,9 +43,14 @@ multi sub MAIN(*@hints, Bool :$s = False) {
   }
 }
 
-multi sub MAIN() {
-  say "Available branches:";
-  display;
+multi sub MAIN(Bool :$s = False) {
+  if $s {
+    print trim run(<git rev-parse --abbrev-ref HEAD>, :out).out.slurp-rest;
+  } else {
+    say "Available branches:";
+    filter-ignores;
+    display;
+  }
 }
 
 sub display(@hints = ()) {
