@@ -29,7 +29,10 @@ multi sub MAIN(*@hints, Bool :$s = False) {
     }
     when 1 {
       if $s {
-        say "Found: @branches[0]";
+        # Only output branch name. Allows to i.e.: git rebase `co -s ...`
+        # (be careful if you do this. But it's not too dangerous -- if there's an ambiguity, it'll error (trying to parse "X branches found:" as a branch name))
+        # XXX => then should the errorcode be 0 only if a matching branch was found..?
+        say @branches[0];
       } else {
         run <<git checkout @branches[0]>>;
       }
