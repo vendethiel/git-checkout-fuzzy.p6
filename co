@@ -6,17 +6,21 @@ my @branches = (run <git for-each-ref --format='%(refname:short)' refs/heads>, :
 my @ignores;
 { @ignores = lines slurp("$*HOME/.co-ignore"); }
 
+sub filter-ignores {
+  for @ignores -> $ignore {
+    @branches.=grep({ $_ !~~ /$ignore/ });
+  }
+}
+
 multi sub MAIN(*@hints, Bool :$s = False) {
-  # check for perfect match
+  # check for perfect match *before* excluding ignores
   if @hints == 1 && any(@branches) eq @hints {
     @branches = @hints;
   } else {
     for @hints {
       @branches.=grep(/$_/);
     }
-    for @ignores -> $ignore {
-      @branches.=grep({ $_ !~~ /$ignore/ });
-    }
+    filter-ignores;
   }
   given @branches {
     when * > 1 {
